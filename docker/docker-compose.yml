@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  network-discovery-1:
+    build:
+      context: .
+    container_name: network-discovery-1
+    networks:
+      custom-bridge:
+        ipv4_address: 192.168.1.15
+    environment:
+      NODE_ENV: development
+    privileged: true
+
+  network-discovery-2:
+    build:
+      context: .
+    container_name: network-discovery-2
+    networks:
+      custom-bridge:
+        ipv4_address: 192.168.1.16
+    environment:
+      NODE_ENV: development
+    privileged: true
+
+networks:
+  custom-bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24

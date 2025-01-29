@@ -1,0 +1,31 @@
+/***************/
+/**** UTILS ****/
+/***************/
+
+.drag-area {
+  -webkit-app-region: drag;
+}
+
+.no-drag-area {
+  -webkit-app-region: no-drag;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gray-a9);
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
+}
+
+.no-text-select {
+  user-select: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

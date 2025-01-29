@@ -1,0 +1,166 @@
+:root,
+.light,
+.light-theme {
+  --blue-1: #fdfdfe;
+  --blue-2: #f7f9ff;
+  --blue-3: #edf2fe;
+  --blue-4: #dfeaff;
+  --blue-5: #d0dfff;
+  --blue-6: #bdd1ff;
+  --blue-7: #a7bff9;
+  --blue-8: #88a5ef;
+  --blue-9: #3e63dd;
+  --blue-10: #3657c3;
+  --blue-11: #3a5bc7;
+  --blue-12: #1d2d5c;
+
+  --mindkeep-gradient-1: linear-gradient(#D9E2FC, #FFDCD3);
+
+  --blue-a1: #00008002;
+  --blue-a2: #0040ff08;
+  --blue-a3: #0047f112;
+  --blue-a4: #0058ff20;
+  --blue-a5: #0052ff2f;
+  --blue-a6: #004eff42;
+  --blue-a7: #0046ee58;
+  --blue-a8: #003fdd77;
+  --blue-a9: #0031d2c1;
+  --blue-a10: #002ab3c9;
+  --blue-a11: #002bb7c5;
+  --blue-a12: #001247e2;
+
+  --blue-contrast: #fff;
+  --blue-surface: #f5f8ffcc;
+  --blue-indicator: #3e63dd;
+  --blue-track: #3e63dd;
+}
+
+.dark,
+.dark-theme {
+  --blue-1: #0c111c;
+  --blue-2: #111725;
+  --blue-3: #172448;
+  --blue-4: #1d2e61;
+  --blue-5: #243974;
+  --blue-6: #2d4484;
+  --blue-7: #375098;
+  --blue-8: #405eb2;
+  --blue-9: #3d63dd;
+  --blue-10: #3f5cb0;
+  --blue-11: #93b4ff;
+  --blue-12: #1d2d5c;
+
+  --mindkeep-gradient-1: linear-gradient(#27282D, #696E77);
+
+  --blue-a1: #0012fb0c;
+  --blue-a2: #1156f916;
+  --blue-a3: #2b64ff3b;
+  --blue-a4: #3567ff56;
+  --blue-a5: #3f71fd6b;
+  --blue-a6: #4b7afd7c;
+  --blue-a7: #5480ff91;
+  --blue-a8: #5783ffad;
+  --blue-a9: #4571ffdb;
+  --blue-a10: #5580feab;
+  --blue-a11: #93b4ff;
+  --blue-a12: #1d2d5c;
+
+  --blue-contrast: #fff;
+  --blue-surface: #111d3980;
+  --blue-indicator: #3d63dd;
+  --blue-track: #3d63dd;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    .dark,
+    .dark-theme {
+      --blue-1: oklch(17.8% 0.025 266.8);
+      --blue-2: oklch(20.7% 0.03 266.8);
+      --blue-3: oklch(27.1% 0.069 266.8);
+      --blue-4: oklch(31.8% 0.093 266.8);
+      --blue-5: oklch(36.1% 0.105 266.8);
+      --blue-6: oklch(40.4% 0.111 266.8);
+      --blue-7: oklch(45% 0.12 266.8);
+      --blue-8: oklch(50.3% 0.137 266.8);
+      --blue-9: oklch(54.3% 0.191 266.8);
+      --blue-10: oklch(49.7% 0.137 266.8);
+      --blue-11: oklch(77.7% 0.123 266.8);
+      --blue-12: oklch(91.1% 0.043 266.8);
+
+      --blue-a1: color(display-p3 0 0.071 0.98 / 0.043);
+      --blue-a2: color(display-p3 0.118 0.361 1 / 0.08);
+      --blue-a3: color(display-p3 0.227 0.404 1 / 0.223);
+      --blue-a4: color(display-p3 0.263 0.42 1 / 0.324);
+      --blue-a5: color(display-p3 0.302 0.451 1 / 0.4);
+      --blue-a6: color(display-p3 0.345 0.49 1 / 0.467);
+      --blue-a7: color(display-p3 0.373 0.51 1 / 0.547);
+      --blue-a8: color(display-p3 0.384 0.525 1 / 0.652);
+      --blue-a9: color(display-p3 0.318 0.451 1 / 0.824);
+      --blue-a10: color(display-p3 0.384 0.518 1 / 0.643);
+      --blue-a11: color(display-p3 0.62 0.722 1 / 0.975);
+      --blue-a12: color(display-p3 0.855 0.898 1 / 0.988);
+
+      --blue-contrast: #fff;
+      --blue-surface: color(display-p3 0.071 0.11 0.212 / 0.5);
+      --blue-indicator: oklch(54.3% 0.191 266.8);
+      --blue-track: oklch(54.3% 0.191 266.8);
+    }
+  }
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root,
+    .light,
+    .light-theme {
+      --blue-1: oklch(99.4% 0.001 267);
+      --blue-2: oklch(98.3% 0.008 267);
+      --blue-3: oklch(96.1% 0.017 267);
+      --blue-4: oklch(93.5% 0.034 267);
+      --blue-5: oklch(90.3% 0.051 267);
+      --blue-6: oklch(86.3% 0.071 267);
+      --blue-7: oklch(80.7% 0.087 267);
+      --blue-8: oklch(73% 0.113 267);
+      --blue-9: oklch(54.4% 0.191 267);
+      --blue-10: oklch(49.7% 0.173 267);
+      --blue-11: oklch(51% 0.173 267);
+      --blue-12: oklch(31.3% 0.086 267);
+
+      --blue-a1: color(display-p3 0.02 0.02 0.51 / 0.008);
+      --blue-a2: color(display-p3 0.02 0.267 0.878 / 0.032);
+      --blue-a3: color(display-p3 0.008 0.239 0.886 / 0.067);
+      --blue-a4: color(display-p3 0.004 0.306 0.937 / 0.118);
+      --blue-a5: color(display-p3 0.004 0.278 0.933 / 0.173);
+      --blue-a6: color(display-p3 0.004 0.247 0.937 / 0.244);
+      --blue-a7: color(display-p3 0.004 0.22 0.871 / 0.326);
+      --blue-a8: color(display-p3 0.004 0.196 0.808 / 0.444);
+      --blue-a9: color(display-p3 0 0.153 0.773 / 0.726);
+      --blue-a10: color(display-p3 0 0.129 0.655 / 0.761);
+      --blue-a11: color(display-p3 0 0.133 0.667 / 0.746);
+      --blue-a12: color(display-p3 0 0.059 0.255 / 0.875);
+
+      --blue-contrast: #fff;
+      --blue-surface: color(display-p3 0.961 0.973 1 / 0.8);
+      --blue-indicator: oklch(54.4% 0.191 267);
+      --blue-track: oklch(54.4% 0.191 267);
+    }
+  }
+}
+
+.radix-themes {
+  --default-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --button-ghost-padding-x: 0;
+  --font-weight-medium: 600;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('./fonts/PlusJakartaSans-VariableFont_wght.ttf');
+}
+
+.rt-BaseButton {
+  cursor: pointer;
+}

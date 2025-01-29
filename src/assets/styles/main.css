@@ -1,0 +1,91 @@
+@import url('./utils.css');
+@import url('./radix.css');
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.navbar {
+  background-color: var(--blue-2);
+  padding-block: var(--space-5);
+}
+
+.dropzone-area,
+.file-list-scrollarea {
+  background-color: var(--gray-2);
+  border-radius: var(--radius-4);
+}
+
+.dropzone-area {
+  padding: 2rem;
+  border: 1px dashed var(--gray-8);
+  transition: background-color 0.15s ease;
+}
+
+.file-list-utils {
+  visibility: hidden;
+}
+
+.file-list:hover .file-list-utils {
+  visibility: visible;
+}
+
+.file-list-info {
+  visibility: hidden;
+}
+
+.file-list-scrollarea:hover .file-list-info {
+  visibility: visible;
+}
+
+.dropzone-area:hover {
+  background-color: var(--blue-3);
+  border-color: var(--blue-8);
+  cursor: pointer;
+}
+
+.navbar-menu-item {
+  border-left: 4px solid transparent;
+  padding-inline: var(--space-4);
+  transition: border-color 0.25s ease;
+  cursor: pointer;
+}
+
+.navbar-menu-item:hover {
+  border-left-color: var(--iris-4);
+}
+
+.navbar-menu-item[data-active='true'] {
+  border-left: 4px solid var(--iris-8);
+}
+
+.device-component {
+  transition: 0.15s ease-in-out;
+  transition-property: border, background-color;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-2);
+}
+
+.device-component.selected {
+  border-color: white;
+  background-color: var(--gray-3);
+}
+
+.device-component:hover {
+  background-color: var(--gray-5);
+}
+
+@keyframes moveUpDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-1rem);
+  }
+}
+
+.animated-arrow {
+  animation: moveUpDown 0.3s infinite alternate;
+}
