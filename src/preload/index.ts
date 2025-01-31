@@ -2,8 +2,8 @@ import { IDevice } from '@/shared/interfaces/IDevice'
 import { ipcRenderer, contextBridge } from 'electron'
 
 export const api = {
-  onDiscoverDevices: (callback: (devices: IDevice[]) => void) =>
-    ipcRenderer.on('discover-device', (_event, devices: IDevice[]) => callback(devices))
+  onDiscoverDevice: (callback: (device: IDevice) => void) =>
+    ipcRenderer.on('discover-device', (_event, device: IDevice) => callback(device))
 }
 
 // --------- Expose some API to the Renderer process ---------

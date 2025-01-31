@@ -3,11 +3,11 @@ import * as crypto from 'crypto'
 import * as dgram from 'dgram'
 import { BrowserWindow } from 'electron'
 import * as fs from 'fs/promises'
-import network from 'network'
-import NodeCache from 'node-cache'
 import os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
+import DeviceCacheService from './services/DeviceCache'
+import { announcePresencePeriod, broadCastAddr } from '@/shared/constants'
 
 type KeyPair = {
   privateKey: string
@@ -22,7 +22,6 @@ class NetworkDiscoveryUDP {
   private readonly port: number
   private signedMessage: string | null
   private readonly socket: dgram.Socket
-  private readonly validDevicesCache: NodeCache
   private readonly os: string
 
   constructor(keyFilePath: string = './keys.json', port: number = 13456) {
@@ -33,40 +32,7 @@ class NetworkDiscoveryUDP {
     this.deviceName = os.userInfo().username
     this.port = port
     this.socket = dgram.createSocket({ type: 'udp4' })
-    this.validDevicesCache = new NodeCache({ stdTTL: 3 })
     this.os = os.platform()
-  }
-
-  private getValidDevices(): IDevice[] {
-    return this.validDevicesCache.keys().map(this.validDevicesCache.get) as IDevice[]
-  }
-
-  private async getActiveHost(): Promise<{ ip: string; multicastAddress: string }> {
-    const getActiveInterface = promisify(network.get_active_interface)
-
-    try {
-      const { ip_address, netmask } = await getActiveInterface()
-
-      if (!ip_address || !netmask) {
-        throw new Error('Active interface information is incomplete.')
-      }
-
-      const ipParts = ip_address.split('.').map(Number)
-      const netmaskParts = netmask.split('.').map(Number)
-
-      const multicastParts = ipParts.map(
-        (octet: number, i: number) => octet | (~netmaskParts[i] & 255)
-      )
-      const multicastAddress = multicastParts.join('.')
-
-      return {
-        ip: ip_address,
-        multicastAddress
-      }
-    } catch (error) {
-      console.error('Failed to get active host IP or multicast address:', error)
-      throw new Error('Unable to determine active host IP or multicast address.')
-    }
   }
 
   private async loadOrCreateKeys(): Promise<void> {
@@ -112,20 +78,22 @@ class NetworkDiscoveryUDP {
   }
 
   private async handleValidDevice(ip: string, device: IDevice): Promise<void> {
-    if (this.validDevicesCache.has(ip)) return
+    if (DeviceCacheService.has(device.id)) {
+      DeviceCacheService.ttl(device.id, DeviceCacheService.getTtl(device.id)!)
+      return
+    }
 
-    this.validDevicesCache.set(ip, device)
+    DeviceCacheService.set(device.id, { ...device, ip })
+    this.sendDeviceToRenderer(device)
     console.log(
-      `Cached valid device: IP = ${ip}, Device Name = ${device.name}, Operating System = ${device.os}`
+      `Cached valid device: ID = ${device.id}, Device Name = ${device.name}, Operating System = ${device.os}`
     )
-    this.sendDevicesToRenderer()
   }
 
-  private sendDevicesToRenderer(): void {
-    const devices = this.getValidDevices()
+  private sendDeviceToRenderer(device: IDevice): void {
     const windows = BrowserWindow.getAllWindows()
     windows.forEach((win) => {
-      win.webContents.send('discover-device', devices)
+      win.webContents.send('discover-device', device)
     })
   }
 
@@ -133,7 +101,7 @@ class NetworkDiscoveryUDP {
     this.socket.on('message', async (message, rinfo) => {
       try {
         const parsedMessage = JSON.parse(message.toString())
-        const { signedMessage, publicKey, deviceName } = parsedMessage
+        const { signedMessage, publicKey, deviceName, os } = parsedMessage
 
         const isValid = await this.verifyMessage(
           signedMessage,
@@ -142,8 +110,12 @@ class NetworkDiscoveryUDP {
         )
 
         if (isValid) {
-          console.log(`Valid message received from device: ${deviceName} (${rinfo.address})`)
-          const device: IDevice = { id: crypto.randomUUID(), name: deviceName, os: this.os }
+          const id = crypto
+            .createHash('sha256')
+            .update(publicKey + deviceName)
+            .digest('hex')
+
+          const device: IDevice = { id, name: deviceName, os }
           await this.handleValidDevice(rinfo.address, device)
         } else {
           console.log('Message signature verification failed.')
@@ -156,6 +128,7 @@ class NetworkDiscoveryUDP {
     this.socket.bind(this.port, () => {
       this.socket.setMulticastLoopback(false)
       this.socket.setBroadcast(true)
+
       console.log(`Socket bound to port ${this.port}`)
     })
   }
@@ -168,15 +141,15 @@ class NetworkDiscoveryUDP {
       os: this.os
     })
 
-    const sendMessage = () =>
-      this.socket.send(message, 0, message.length, this.port, '255.255.255.255', (err) => {
-        console.log('sent message')
+    const sendMessage = () => {
+      this.socket.send(message, 0, message.length, this.port, broadCastAddr, (err) => {
         if (err) console.error('Error sending announcement:', err)
       })
+    }
 
     sendMessage()
 
-    setInterval(sendMessage, 5 * 1000)
+    setInterval(sendMessage, announcePresencePeriod)
   }
 
   public async start(): Promise<void> {

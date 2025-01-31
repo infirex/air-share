@@ -56,18 +56,18 @@ const DeviceComponent: React.FC<IDeviceComponent> = (props) => {
 const ComposePanel: React.FC = () => {
   const [files, handlers] = useList<IFile>([])
 
-  const { devices, removeDevice, setDevices, selectDevice, selectedDevice } = useDeviceStore(
+  const { devices, removeDevice, addDevice, selectDevice, selectedDevice } = useDeviceStore(
     useShallow((state) => ({
       devices: state.devices,
       removeDevice: state.removeDevice,
-      setDevices: state.setDevices,
       selectDevice: state.selectDevice,
-      selectedDevice: state.selectedDevice
+      selectedDevice: state.selectedDevice,
+      addDevice: state.addDevice
     }))
   )
 
   useEffect(() => {
-    window.api.onDiscoverDevices(setDevices)
+    window.api.onDiscoverDevice(addDevice)
   }, [])
 
   const onDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -221,7 +221,14 @@ const ComposePanel: React.FC = () => {
         </Flex>
       </ScrollArea>
 
-      <Button mt={'auto'} size={'3'} variant="outline" color="gray" style={{ width: '100%' }}>
+      <Button
+        disabled={!selectedDevice}
+        mt={'auto'}
+        size={'3'}
+        variant="outline"
+        color="gray"
+        style={{ width: '100%' }}
+      >
         Send
       </Button>
     </>
