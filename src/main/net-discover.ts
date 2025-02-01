@@ -1,4 +1,4 @@
-import { IDevice } from '@/shared/interfaces/IDevice'
+import { IDevice } from '@/shared/interfaces'
 import * as crypto from 'crypto'
 import * as dgram from 'dgram'
 import { BrowserWindow } from 'electron'

@@ -1,4 +1,4 @@
-import { IDevice } from '@/shared/interfaces/IDevice'
+import { IDevice } from '@/shared/interfaces'
 import { create } from 'zustand'
 
 type State = {

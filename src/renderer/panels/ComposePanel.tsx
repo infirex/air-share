@@ -1,4 +1,4 @@
-import { IFile } from '@/shared/interfaces/IFile'
+import { IDevice, IFile } from '@/shared/interfaces'
 import { useDeviceStore } from '@/renderer/store/useDeviceStore'
 import { Badge, Button, Flex, IconButton, ScrollArea, Separator, Text } from '@radix-ui/themes'
 import { FileRejection, useDropzone } from 'react-dropzone'
@@ -17,7 +17,6 @@ import {
 } from 'react-icons/fa6'
 import { useList } from 'react-use'
 import { useShallow } from 'zustand/react/shallow'
-import { IDevice } from '@/shared/interfaces/IDevice'
 import { useEffect } from 'react'
 
 interface IDeviceComponent extends IDevice {
