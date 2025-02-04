@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import networkDiscovery from './net-discover'
+import { registerIPCMainHandlers } from './IPCHandler'
 // import { update } from '../../electron/main/update'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,6 +77,7 @@ async function createWindow() {
 
 app.whenReady().then(async () => {
   await createWindow()
+  registerIPCMainHandlers(win!)
   networkDiscovery.start().catch(console.error)
 })
 

@@ -227,6 +227,12 @@ const ComposePanel: React.FC = () => {
         variant="outline"
         color="gray"
         style={{ width: '100%' }}
+        onClick={() =>
+          window.api.sendFiles(
+            selectedDevice?.id ?? '',
+            files.map((file) => file.path)
+          )
+        }
       >
         Send
       </Button>
