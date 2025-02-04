@@ -8,4 +8,3 @@ export const api = {
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('api', api)
- 
