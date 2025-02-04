@@ -7,7 +7,7 @@ import os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
 import DeviceCacheService from './services/DeviceCache'
-import { announcePresencePeriod, broadCastAddr } from '@/shared/constants'
+import { ANNOUNCE_PERIOD, BROADCAST_ADDR, PORT } from '@/shared/constants'
 
 type KeyPair = {
   privateKey: string
@@ -24,7 +24,7 @@ class NetworkDiscoveryUDP {
   private readonly socket: dgram.Socket
   private readonly os: string
 
-  constructor(keyFilePath: string = './keys.json', port: number = 13456) {
+  constructor(keyFilePath: string = './keys.json', port: number = PORT) {
     this.keyFilePath = path.resolve(keyFilePath)
     this.privateKey = null
     this.publicKey = null
@@ -83,7 +83,7 @@ class NetworkDiscoveryUDP {
       return
     }
 
-    DeviceCacheService.set(device.id, { ...device, ip })
+    DeviceCacheService.set(device.id, ip)
     this.sendDeviceToRenderer(device)
     console.log(
       `Cached valid device: ID = ${device.id}, Device Name = ${device.name}, Operating System = ${device.os}`
@@ -142,14 +142,14 @@ class NetworkDiscoveryUDP {
     })
 
     const sendMessage = () => {
-      this.socket.send(message, 0, message.length, this.port, broadCastAddr, (err) => {
+      this.socket.send(message, 0, message.length, this.port, BROADCAST_ADDR, (err) => {
         if (err) console.error('Error sending announcement:', err)
       })
     }
 
     sendMessage()
 
-    setInterval(sendMessage, announcePresencePeriod)
+    setInterval(sendMessage, ANNOUNCE_PERIOD)
   }
 
   public async start(): Promise<void> {

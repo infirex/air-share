@@ -1,6 +1,6 @@
-import { cacheTTL } from '@/shared/constants'
+import { CACHE_TTL } from '@/shared/constants'
 import NodeCache from 'node-cache'
 
-const DeviceCacheService = new NodeCache({ stdTTL: cacheTTL })
+const DeviceCacheService = new NodeCache({ stdTTL: CACHE_TTL })
 
 export default DeviceCacheService
