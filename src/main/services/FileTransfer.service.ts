@@ -16,26 +16,31 @@ import { Transform } from 'stream'
 import { pipeline } from 'stream/promises'
 
 export class FileTransfer {
-  private readonly socket: Socket | null = null
+  private socket: Socket | null = null
   private server: http.Server | null = null
   private ioServer: Server | null = null
   private readonly activeTransfers = new Map<string, AbortController>()
   private readonly batchProgress = new Map<string, { sent: number; total: number }>()
-  private readonly port: number
-  private readonly targetIp: string
+  private readonly port: number = PORT
+  // private readonly targetIp: string
 
-  constructor(targetIP: string, port: number = PORT) {
-    this.port = port
-    this.targetIp = targetIP
+  constructor() {
+    // this.port = port
+    // this.targetIp = targetIP
 
-    // SENDER SETUP
+    // // SENDER SETUP
+    // this.setSocket(targetIP)
+
+    this.startReceiver()
+  }
+
+  setSocket(targetIP: string, port: number = PORT) {
     this.socket = io(`http://${targetIP}:${port}`, {
       reconnection: true,
       reconnectionAttempts: 3
     })
-
-    this.startReceiver()
   }
+
   // RECEIVER SETUP
   startReceiver(): void {
     this.server = http.createServer()
@@ -201,6 +206,8 @@ export class FileTransfer {
   }
 }
 
+const fileTransferService = new FileTransfer()
+export default fileTransferService
 // ELECTRON INTEGRATION EXAMPLE
 /*
 // Main Process

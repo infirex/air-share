@@ -6,7 +6,7 @@ import * as fs from 'fs/promises'
 import os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
-import DeviceCacheService from './services/DeviceCache'
+import DeviceCacheService from './DeviceCache.service'
 import { ANNOUNCE_PERIOD, BROADCAST_ADDR, PORT } from '@/shared/constants'
 
 type KeyPair = {

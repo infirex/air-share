@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import networkDiscovery from './net-discover'
+import networkDiscovery from './services/NetDiscover.service'
 import { registerIPCMainHandlers } from './IPCHandler'
 // import { update } from '../../electron/main/update'
 
