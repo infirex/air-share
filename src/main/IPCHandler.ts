@@ -7,8 +7,12 @@ export const registerIPCMainHandlers = (window: BrowserWindow): void => {
     const deviceIP = DeviceCacheService.get(deviceID) as string
     console.log(deviceID, files)
     if (deviceIP) {
-      fileTransferService.setSocket(deviceIP)
-      fileTransferService.sendFiles(files, { onFileProgress: console.log })
+      fileTransferService
+        .setSocket(deviceIP)
+        .then(() => {
+          fileTransferService.sendFiles(files, { onFileProgress: console.log })
+        })
+        .catch(console.error)
     } else {
       console.error(`Could not find device with ${deviceID}`)
     }

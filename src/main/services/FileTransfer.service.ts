@@ -22,22 +22,31 @@ export class FileTransfer {
   private readonly activeTransfers = new Map<string, AbortController>()
   private readonly batchProgress = new Map<string, { sent: number; total: number }>()
   private readonly port: number = PORT
-  // private readonly targetIp: string
 
   constructor() {
-    // this.port = port
-    // this.targetIp = targetIP
-
-    // // SENDER SETUP
-    // this.setSocket(targetIP)
-
     this.startReceiver()
   }
 
-  setSocket(targetIP: string, port: number = PORT) {
-    this.socket = io(`http://${targetIP}:${port}`, {
-      reconnection: true,
-      reconnectionAttempts: 3
+  async setSocket(deviceIP: string, port: number = PORT): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.socket = io(`http://${deviceIP}:${port}`, {
+        reconnectionAttempts: 3,
+        timeout: 5000
+      })
+
+      this.socket.on('connect', () => {
+        console.log(`Connected to ${deviceIP}`)
+        resolve(true)
+      })
+
+      this.socket.on('connect_error', (err) => {
+        console.error(`Connection error: ${err.message}`)
+        resolve(false)
+      })
+
+      this.socket.on('disconnect', () => {
+        console.warn(`Disconnected from ${deviceIP}`)
+      })
     })
   }
 
@@ -54,7 +63,7 @@ export class FileTransfer {
       })
 
       socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
-        const downloadsDir = path.join(__dirname, 'downloads')
+        const downloadsDir = path.join('downloads')
         if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
 
         const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
@@ -78,8 +87,7 @@ export class FileTransfer {
       })
 
       socket.on('file-end', ({ fileId }) => {
-        activeFiles.get(fileId)?.end()
-        activeFiles.delete(fileId)
+        activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
       })
 
       socket.on('disconnect', () => {
@@ -208,26 +216,3 @@ export class FileTransfer {
 
 const fileTransferService = new FileTransfer()
 export default fileTransferService
-// ELECTRON INTEGRATION EXAMPLE
-/*
-// Main Process
-const { app, BrowserWindow, ipcMain } = require('electron');
-const transfer = new FileTransfer();
-
-function createWindow() {
-  const mainWindow = new BrowserWindow({ /* config *\/ });
-  mainWindow.loadFile('index.html');
-  
-  ipcMain.on('start-receiver', () => transfer.startReceiver());
-  ipcMain.on('set-target', (event, { ip, port }) => transfer.setTarget(ip, port));
-  ipcMain.handle('send-file', (event, filePath) => transfer.sendFile(filePath));
-}
-
-// Renderer Process (preload.js)
-const { ipcRenderer } = require('electron');
-window.transferAPI = {
-  startReceiver: () => ipcRenderer.send('start-receiver'),
-  setTarget: (ip, port) => ipcRenderer.send('set-target', { ip, port }),
-  sendFile: (filePath) => ipcRenderer.invoke('send-file', filePath)
-};
-*/
