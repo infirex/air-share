@@ -16,15 +16,11 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
-    "pree2e": "vite build --mode=test",
-    "e2e": "playwright test"
+    "pree2e": "vite build --mode=test"
   },
   "dependencies": {
     "@radix-ui/themes": "^3.1.6",
-    "bonjour-service": "^1.3.0",
     "bootstrap-icons": "^1.11.3",
-    "electron-updater": "^6.1.8",
-    "multicast-dns": "^7.2.5",
     "network": "^0.7.0",
     "node-cache": "^5.1.2",
     "react-dropzone": "^14.2.3",
@@ -36,22 +32,19 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.42.1",
-    "@types/multicast-dns": "^7.2.4",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
-    "electron": "^29.1.1",
-    "electron-builder": "^24.13.3",
+    "electron": "^34.1.1",
+    "electron-builder": "^25.1.8",
     "postcss": "^8.4.35",
     "postcss-import": "^16.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tailwindcss": "^3.4.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "typescript": "^5.4.2",
-    "vite": "^5.1.5",
-    "vite-plugin-electron": "^0.28.4",
+    "vite": "^6.1.0",
+    "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.5"
   }
 }
