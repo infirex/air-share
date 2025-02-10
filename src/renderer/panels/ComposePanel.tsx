@@ -17,7 +17,7 @@ import {
 } from 'react-icons/fa6'
 import { useList } from 'react-use'
 import { useShallow } from 'zustand/react/shallow'
-import { useEffect } from 'react'
+import { JSX, useEffect } from 'react'
 
 interface IDeviceComponent extends IDevice {
   onRemove: (id: string) => void
@@ -75,8 +75,8 @@ const ComposePanel: React.FC = () => {
 
       reader.onerror = () => console.log('Error reading file')
 
-      reader.onload = async () => {
-        console.log(file.type)
+      reader.onload = () => {
+        console.log(file.path)
         handlers.push({
           id: crypto.randomUUID(), // TODO: handle this
           name: file.name,
@@ -95,7 +95,7 @@ const ComposePanel: React.FC = () => {
     useFsAccessApi: false,
     maxSize: 10 * 1024 * 1024 * 1024 // 10GB
   })
-  console.log(isDragActive)
+
   const formatBytes = (bytes: number, decimals: number = 2): string => {
     if (bytes === 0) return '0 B'
 

@@ -12,7 +12,7 @@ import http from 'http'
 import path from 'path'
 import { Server } from 'socket.io'
 import { Socket, io } from 'socket.io-client'
-import { Transform } from 'stream'
+import { PassThrough, Transform } from 'stream'
 import { pipeline } from 'stream/promises'
 
 export class FileTransfer {
@@ -74,12 +74,13 @@ export class FileTransfer {
         const writeStream = activeFiles.get(fileId)
         if (!writeStream) return callback({ status: 'error' })
 
+        const passThrough = new PassThrough()
         try {
-          await new Promise((resolve, reject) => {
-            writeStream.write(chunk, (error) => {
-              error ? reject(error) : resolve(true)
-            })
-          })
+          passThrough.write(chunk)
+
+          await pipeline(passThrough, writeStream)
+
+          passThrough.end()
           callback({ status: 'received' })
         } catch (error) {
           callback({ status: 'error', message: (error as Error).message })
@@ -122,8 +123,13 @@ export class FileTransfer {
 
     try {
       await pipeline(
-        fs.createReadStream(filePath, { highWaterMark: 64 * 1024 }),
+        fs.createReadStream(filePath, { highWaterMark: 256 * 1024 }),
         this.createChunkTransformer(fileId, fileSize, callbacks),
+        async function* (source) {
+          for await (const _chunk of source) {
+            // Gelen veriyi kullanmaya gerek yok; sadece akışın tamamlanmasını sağlıyoruz.
+          }
+        },
         { signal: abortController.signal }
       )
 

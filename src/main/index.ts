@@ -63,6 +63,7 @@ async function createWindow() {
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString())
+    networkDiscovery.start().catch(console.error)
   })
 
   // Make all links open with the browser, not with the application
@@ -78,7 +79,6 @@ async function createWindow() {
 app.whenReady().then(async () => {
   await createWindow()
   registerIPCMainHandlers(win!)
-  networkDiscovery.start().catch(console.error)
 })
 
 app.on('window-all-closed', () => {
