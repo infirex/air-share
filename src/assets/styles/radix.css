@@ -14,7 +14,7 @@
   --blue-11: #3a5bc7;
   --blue-12: #1d2d5c;
 
-  --mindkeep-gradient-1: linear-gradient(#D9E2FC, #FFDCD3);
+  --mindkeep-gradient-1: linear-gradient(#d9e2fc, #ffdcd3);
 
   --blue-a1: #00008002;
   --blue-a2: #0040ff08;
@@ -50,7 +50,7 @@
   --blue-11: #93b4ff;
   --blue-12: #1d2d5c;
 
-  --mindkeep-gradient-1: linear-gradient(#27282D, #696E77);
+  --mindkeep-gradient-1: linear-gradient(#27282d, #696e77);
 
   --blue-a1: #0012fb0c;
   --blue-a2: #1156f916;
@@ -158,7 +158,6 @@
 
 @font-face {
   font-family: 'Plus Jakarta Sans';
-  src: url('./fonts/PlusJakartaSans-VariableFont_wght.ttf');
 }
 
 .rt-BaseButton {
