@@ -1,10 +1,10 @@
 import { BrowserWindow, ipcMain } from 'electron'
+import DeviceListService from './services/DeviceList.service'
 import fileTransferService from './services/FileTransfer.service'
-import DeviceCacheService from './services/DeviceCache.service'
 
 export const registerIPCMainHandlers = (window: BrowserWindow): void => {
   ipcMain.on('send-files', (_event, deviceID, files) => {
-    const deviceIP = DeviceCacheService.get(deviceID) as string
+    const deviceIP = DeviceListService.get(deviceID) as string
     console.log(deviceID, files)
     if (deviceIP) {
       fileTransferService

@@ -1,19 +1,19 @@
 /**
  * Bidirectional WebSocket file transfer handler. Manages concurrent
  * send/receive operations with progress tracking and cancellation.
- * Features: Stream-based chunking (64KB), UUID tracking, batch
+ * Features: Stream-based chunking, UUID tracking, batch
  * transfers, automatic reconnection. Operates as both client
  * and server simultaneously.
  */
 import { PORT } from '@/shared/constants'
 import { IBatchMetadata, IFileMetadata, ITransferCallbacks } from '@/shared/interfaces/ITransfer'
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
 import { Server } from 'socket.io'
 import { Socket, io } from 'socket.io-client'
 import { PassThrough, Transform } from 'stream'
 import { pipeline } from 'stream/promises'
+import fs from 'fs'
+import http from 'http'
+import path from 'path'
 
 export class FileTransfer {
   private socket: Socket | null = null

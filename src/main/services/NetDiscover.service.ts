@@ -1,3 +1,4 @@
+import { BROADCAST_ADDR, PORT } from '@/shared/constants'
 import { IDevice } from '@/shared/interfaces'
 import * as crypto from 'crypto'
 import * as dgram from 'dgram'
@@ -6,8 +7,7 @@ import * as fs from 'fs/promises'
 import os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
-import DeviceCacheService from './DeviceCache.service'
-import { ANNOUNCE_PERIOD, BROADCAST_ADDR, PORT } from '@/shared/constants'
+import { default as DeviceListService } from './DeviceList.service'
 
 type KeyPair = {
   privateKey: string
@@ -78,16 +78,13 @@ class NetworkDiscoveryUDP {
   }
 
   private async handleValidDevice(ip: string, device: IDevice): Promise<void> {
-    if (DeviceCacheService.has(device.id)) {
-      DeviceCacheService.ttl(device.id, DeviceCacheService.getTtl(device.id)!)
-      return
+    if (!DeviceListService.has(device.id)) {
+      DeviceListService.set(device.id, ip)
+      this.sendDeviceToRenderer(device)
+      console.log(
+        `Cached valid device: ID = ${device.id}, Device Name = ${device.name}, Operating System = ${device.os}`
+      )
     }
-
-    DeviceCacheService.set(device.id, ip)
-    this.sendDeviceToRenderer(device)
-    console.log(
-      `Cached valid device: ID = ${device.id}, Device Name = ${device.name}, Operating System = ${device.os}`
-    )
   }
 
   private sendDeviceToRenderer(device: IDevice): void {
