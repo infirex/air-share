@@ -74,13 +74,8 @@ export class FileTransfer {
         const writeStream = activeFiles.get(fileId)
         if (!writeStream) return callback({ status: 'error' })
 
-        const passThrough = new PassThrough()
         try {
-          passThrough.write(chunk)
-
-          await pipeline(passThrough, writeStream)
-
-          passThrough.end()
+          writeStream.write(chunk)
           callback({ status: 'received' })
         } catch (error) {
           callback({ status: 'error', message: (error as Error).message })
