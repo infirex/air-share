@@ -112,13 +112,9 @@ class NetworkDiscoveryUDP {
         )
 
         if (isValid) {
-          const id = crypto
-            .createHash('sha256')
-            .update(publicKey + deviceName)
-            .digest('hex')
-
-          const device: IDevice = { id, name: deviceName, os }
+          const device: IDevice = { id: publicKey, name: deviceName, os }
           await this.handleValidDevice(rinfo.address, device)
+          this.announcePresence()
         } else {
           console.log('Message signature verification failed.')
         }
@@ -143,15 +139,9 @@ class NetworkDiscoveryUDP {
       os: this.os
     })
 
-    const sendMessage = () => {
-      this.socket.send(message, 0, message.length, this.port, BROADCAST_ADDR, (err) => {
-        if (err) console.error('Error sending announcement:', err)
-      })
-    }
-
-    sendMessage()
-
-    setInterval(sendMessage, ANNOUNCE_PERIOD)
+    this.socket.send(message, 0, message.length, this.port, BROADCAST_ADDR, (err) => {
+      if (err) console.error('Error sending announcement:', err)
+    })
   }
 
   public async start(): Promise<void> {
