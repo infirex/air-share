@@ -103,6 +103,8 @@ class NetworkDiscoveryUDP {
         const parsedMessage = JSON.parse(message.toString())
         const { signedMessage, publicKey, deviceName, os } = parsedMessage
 
+        if (publicKey === this.publicKey) return // prevent loopback
+
         const isValid = await this.verifyMessage(
           signedMessage,
           publicKey,
