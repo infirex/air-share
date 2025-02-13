@@ -14,7 +14,7 @@ const Panel: React.FC = () => {
   )
 
   return (
-    <Flex direction={'column'} p={'6'} gap={'5'} align={'center'} flexGrow={'1'}>
+    <Flex direction={'column'} p={'5'} gap={'4'} align={'center'} flexGrow={'1'}>
       <Text size={'4'}>{activePage}</Text>
       {activePage === ActivePageType.Compose && <ComposePanel />}
       {activePage === ActivePageType.Inbox && <InboxPanel />}
