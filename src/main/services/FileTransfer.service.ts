@@ -7,13 +7,13 @@
  */
 import { PORT } from '@/shared/constants'
 import { IBatchMetadata, IFileMetadata, ITransferCallbacks } from '@/shared/interfaces/ITransfer'
-import { Server } from 'socket.io'
-import { Socket, io } from 'socket.io-client'
-import { PassThrough, Transform } from 'stream'
-import { pipeline } from 'stream/promises'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
+import { Server } from 'socket.io'
+import { Socket, io } from 'socket.io-client'
+import { Transform } from 'stream'
+import { pipeline } from 'stream/promises'
 
 export class FileTransfer {
   private socket: Socket | null = null
@@ -22,10 +22,6 @@ export class FileTransfer {
   private readonly activeTransfers = new Map<string, AbortController>()
   private readonly batchProgress = new Map<string, { sent: number; total: number }>()
   private readonly port: number = PORT
-
-  constructor() {
-    this.startReceiver()
-  }
 
   async setSocket(deviceIP: string, port: number = PORT): Promise<boolean> {
     return new Promise((resolve) => {
@@ -51,43 +47,54 @@ export class FileTransfer {
   }
 
   // RECEIVER SETUP
-  startReceiver(): void {
+  startReceiver(
+    onConnectionRequest: (socketID: string, approveCallback: (approved: boolean) => void) => void
+  ) {
     this.server = http.createServer()
     this.ioServer = new Server(this.server)
 
     this.ioServer.on('connection', (socket) => {
-      const activeFiles = new Map<string, fs.WriteStream>()
-
-      socket.on('batch-start', ({ batchId, totalSize }: IBatchMetadata) => {
-        this.batchProgress.set(batchId, { sent: 0, total: totalSize })
-      })
-
-      socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
-        const downloadsDir = path.join('downloads')
-        if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
-
-        const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
-        activeFiles.set(fileId, writeStream)
-      })
-
-      socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
-        const writeStream = activeFiles.get(fileId)
-        if (!writeStream) return callback({ status: 'error' })
-
-        try {
-          writeStream.write(chunk)
-          callback({ status: 'received' })
-        } catch (error) {
-          callback({ status: 'error', message: (error as Error).message })
+      onConnectionRequest(socket.id, (approved) => {
+        if (!approved) {
+          console.log(`Connection rejected: ${socket.id}`)
+          socket.emit('connection-rejected')
+          socket.disconnect()
+          return
         }
-      })
 
-      socket.on('file-end', ({ fileId }) => {
-        activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
-      })
+        const activeFiles = new Map<string, fs.WriteStream>()
 
-      socket.on('disconnect', () => {
-        activeFiles.forEach((stream) => stream.destroy())
+        socket.on('batch-start', ({ batchId, totalSize }: IBatchMetadata) => {
+          this.batchProgress.set(batchId, { sent: 0, total: totalSize })
+        })
+
+        socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
+          const downloadsDir = path.join('downloads')
+          if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
+
+          const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
+          activeFiles.set(fileId, writeStream)
+        })
+
+        socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
+          const writeStream = activeFiles.get(fileId)
+          if (!writeStream) return callback({ status: 'error' })
+
+          try {
+            writeStream.write(chunk)
+            callback({ status: 'received' })
+          } catch (error) {
+            callback({ status: 'error', message: (error as Error).message })
+          }
+        })
+
+        socket.on('file-end', ({ fileId }) => {
+          activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
+        })
+
+        socket.on('disconnect', () => {
+          activeFiles.forEach((stream) => stream.destroy())
+        })
       })
     })
 
