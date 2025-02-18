@@ -37,6 +37,8 @@ async function createWindow() {
     title: 'Main window',
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     autoHideMenuBar: true,
+    height: 520,
+    width: 558,
     minWidth: 558,
     minHeight: 520,
     webPreferences: {
