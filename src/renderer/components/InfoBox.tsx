@@ -2,26 +2,26 @@ import { Flex, Text } from '@radix-ui/themes'
 import React from 'react'
 
 interface IInfoBox {
-  icon: JSX.Element
+  Icon: React.ElementType
   title: string
   description: string
 }
 
-const InfoBox: React.FC<IInfoBox> = (props) => {
+const InfoBox: React.FC<IInfoBox> = ({ Icon, description, title }) => {
   return (
     <Flex
-      p={'5'}
+      p={'4'}
       width={'100%'}
       gap={'4'}
       align={'center'}
       style={{ backgroundColor: 'var(--gray-3)', borderRadius: 'var(--radius-3)' }}
     >
-      {props.icon}
-      <Flex direction={'column'}>
-        <Text weight={'medium'} size={'4'}>
-          {props.title}
+      <Icon size={'20'} />
+      <Flex direction={'column'} gap={'1'}>
+        <Text weight={'medium'} size={'2'}>
+          {title}
         </Text>
-        <Text>{props.description}</Text>
+        <Text size={'1'}>{description}</Text>
       </Flex>
     </Flex>
   )

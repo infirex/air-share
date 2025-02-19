@@ -3,6 +3,7 @@ import DeviceListService from './services/DeviceList.service'
 import fileTransferService from './services/FileTransfer.service'
 import networkDiscovery from './services/NetDiscover.service'
 import { showNotification } from './Utils'
+import os from 'os'
 
 export const registerIPCMainHandlers = (window: BrowserWindow): void => {
   window.webContents.on('did-finish-load', () => {
@@ -28,4 +29,6 @@ export const registerIPCMainHandlers = (window: BrowserWindow): void => {
       console.error(`Could not find device with ${deviceID}`)
     }
   })
+
+  ipcMain.handle('get-current-device-info', (_event) => os.userInfo().username)
 }

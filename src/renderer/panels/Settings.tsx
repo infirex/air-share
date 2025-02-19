@@ -1,8 +1,15 @@
 import InfoBox from '@/renderer/components/InfoBox'
 import { Flex, Link, Separator, Text } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 import { FaComputer } from 'react-icons/fa6'
 
 const Settings: React.FC = () => {
+  const [currentDevice, setCurrentDevice] = useState('')
+
+  useEffect(() => {
+    window.api.getCurrentDeviceInfo().then(setCurrentDevice)
+  }, [])
+
   return (
     <>
       <Separator
@@ -11,7 +18,7 @@ const Settings: React.FC = () => {
           background: 'radial-gradient(circle, var(--gray-9), rgba(255, 255, 255, 0))'
         }}
       />
-      <InfoBox description="Laptop" title="Pigon-Erdem" icon={<FaComputer size={'36'} />} />
+      <InfoBox description="Laptop" title={currentDevice.toUpperCase()} Icon={FaComputer} />
       <Text mt={'6'} weight={'light'} color="gray" size={'2'}>
         About
       </Text>

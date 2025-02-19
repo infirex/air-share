@@ -36,7 +36,7 @@ const DeviceComponent: React.FC<IDeviceComponent> = (props) => {
       onClick={() => props.onSelect(props.id)}
     >
       <Flex gap={'5'} align={'center'}>
-        <FaComputer size={30} />
+        <FaComputer size={24} />
         <Flex direction={'column'}>
           <Text weight={'bold'}>{props.name}</Text>
           <Text weight={'light'} size={'1'}>
@@ -205,7 +205,7 @@ const ComposePanel: React.FC = () => {
         }}
       />
       <ScrollArea style={{ flex: '1' }}>
-        <Flex direction={'column'} px={'3'} gap={'3'}>
+        <Flex direction={'column'} gap={'3'}>
           {devices?.map((device) => (
             <DeviceComponent
               key={device.id}
