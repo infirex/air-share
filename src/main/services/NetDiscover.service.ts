@@ -107,9 +107,10 @@ class NetworkDiscoveryUDP {
           publicKey,
           `${publicKey}:${deviceName}`
         )
+        const hashedPublicKey = crypto.createHash('sha256').update(publicKey).digest('hex')
 
         if (isValid) {
-          const device: IDevice = { id: publicKey, name: deviceName, os }
+          const device: IDevice = { id: hashedPublicKey, name: deviceName, os }
           await this.handleValidDevice(rinfo.address, device)
           this.announcePresence()
         } else {

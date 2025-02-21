@@ -13,16 +13,16 @@ type Action = {
   removeDevice: (id: string) => void
 }
 
-export const useDeviceStore = create<State & Action>()((set, get) => ({
+export const useDeviceStore = create<State & Action>()((set) => ({
   devices: [],
-  addDevice: (device: IDevice) => set({ devices: [...get().devices, device] }),
+  addDevice: (device: IDevice) => set((state) => ({ devices: [...state.devices, device] })),
   setDevices: (devices: IDevice[]) => set({ devices }),
   selectDevice: (id: string) =>
-    set({
-      selectedDevice: get().selectedDevice
+    set((state) => ({
+      selectedDevice: state.selectedDevice
         ? undefined
-        : get().devices?.find((device) => device.id === id)
-    }),
+        : state.devices?.find((device) => device.id === id)
+    })),
   removeDevice: (id: string) =>
-    set({ devices: get().devices?.filter((device) => device.id !== id) })
+    set((state) => ({ devices: state.devices?.filter((device) => device.id !== id) }))
 }))

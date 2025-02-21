@@ -1,9 +1,21 @@
 import InfoBox from '@/renderer/components/InfoBox'
 import { Separator } from '@radix-ui/themes'
 import { FaList } from 'react-icons/fa6'
+import { useTransferStore } from '../store'
+import { useShallow } from 'zustand/react/shallow'
 
 const InboxPanel: React.FC = () => {
-  return (
+  const { transfers } = useTransferStore(
+    useShallow((state) => ({
+      transfers: state.transfers
+    }))
+  )
+
+  return transfers ? (
+    // TODO: show transfer list
+    <></>
+  ) : (
+    // no transfer
     <>
       <Separator
         style={{

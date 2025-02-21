@@ -1,4 +1,4 @@
-import { ActivePageType, useGlobalStore } from '@/renderer/store/useGlobalStore'
+import { ActivePageType, useGlobalStore } from '@/renderer/store'
 import { Flex, Text, Tooltip } from '@radix-ui/themes'
 import { FaInbox, FaLaptop, FaPencil, FaSignsPost } from 'react-icons/fa6'
 import { useShallow } from 'zustand/react/shallow'

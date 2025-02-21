@@ -7,8 +7,13 @@ export interface IFileMetadata {
 
 export interface IBatchMetadata {
   batchId: string
-  totalFiles: number
-  totalSize: number
+  files: { name: string; size: number }[]
+}
+
+export interface INewTransfer {
+  deviceID: string
+  socketID: string
+  files: { name: string; size: number }[]
 }
 
 export interface ITransferCallbacks {

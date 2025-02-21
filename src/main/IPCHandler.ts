@@ -2,16 +2,22 @@ import { BrowserWindow, ipcMain } from 'electron'
 import DeviceListService from './services/DeviceList.service'
 import fileTransferService from './services/FileTransfer.service'
 import networkDiscovery from './services/NetDiscover.service'
-import { showNotification } from './Utils'
 import os from 'os'
 
 export const registerIPCMainHandlers = (window: BrowserWindow): void => {
   window.webContents.on('did-finish-load', () => {
     networkDiscovery.start().catch(console.error)
-    fileTransferService.startReceiver((socketID, approveCallback) => {
-      if (window.isMinimized())
-        showNotification('New Transfer', 'xxx wants to start file transfer', window)
-      approveCallback(false)
+
+    fileTransferService.startReceiver((newTransfer, approveCallback) => {
+      // TODO: click event is not working, handle it
+      // if (window.isMinimized())
+      // showNotification('New Transfer', 'xxx wants to start file transfer', window)
+
+      window.webContents.send('new-transfer', newTransfer)
+
+      ipcMain.on('new-transfer', (_evt, approvedSocketID, isApproved) => {
+        if (newTransfer.socketID === approvedSocketID) approveCallback(isApproved)
+      })
     })
   })
 

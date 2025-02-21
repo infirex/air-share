@@ -1,6 +1,7 @@
+import { useDeviceStore } from '@/renderer/store'
 import { IDevice, IFile } from '@/shared/interfaces'
-import { useDeviceStore } from '@/renderer/store/useDeviceStore'
 import { Badge, Button, Flex, IconButton, ScrollArea, Separator, Text } from '@radix-ui/themes'
+import { JSX } from 'react'
 import { FileRejection, useDropzone } from 'react-dropzone'
 import {
   FaArrowDown,
@@ -17,7 +18,6 @@ import {
 } from 'react-icons/fa6'
 import { useList } from 'react-use'
 import { useShallow } from 'zustand/react/shallow'
-import { JSX, useEffect } from 'react'
 
 interface IDeviceComponent extends IDevice {
   onRemove: (id: string) => void
@@ -55,19 +55,14 @@ const DeviceComponent: React.FC<IDeviceComponent> = (props) => {
 const ComposePanel: React.FC = () => {
   const [files, handlers] = useList<IFile>([])
 
-  const { devices, removeDevice, addDevice, selectDevice, selectedDevice } = useDeviceStore(
+  const { devices, removeDevice, selectDevice, selectedDevice } = useDeviceStore(
     useShallow((state) => ({
       devices: state.devices,
       removeDevice: state.removeDevice,
       selectDevice: state.selectDevice,
-      selectedDevice: state.selectedDevice,
-      addDevice: state.addDevice
+      selectedDevice: state.selectedDevice
     }))
   )
-
-  useEffect(() => {
-    window.api.onDiscoverDevice(addDevice)
-  }, [])
 
   const onDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
     acceptedFiles.forEach((file) => {

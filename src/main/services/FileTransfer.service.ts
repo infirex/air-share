@@ -6,7 +6,12 @@
  * and server simultaneously.
  */
 import { PORT } from '@/shared/constants'
-import { IBatchMetadata, IFileMetadata, ITransferCallbacks } from '@/shared/interfaces/ITransfer'
+import {
+  IBatchMetadata,
+  IFileMetadata,
+  INewTransfer,
+  ITransferCallbacks
+} from '@/shared/interfaces/ITransfer'
 import fs from 'fs'
 import http from 'http'
 import path from 'path'
@@ -14,6 +19,7 @@ import { Server } from 'socket.io'
 import { Socket, io } from 'socket.io-client'
 import { Transform } from 'stream'
 import { pipeline } from 'stream/promises'
+import DeviceListService from './DeviceList.service'
 
 export class FileTransfer {
   private socket: Socket | null = null
@@ -48,52 +54,67 @@ export class FileTransfer {
 
   // RECEIVER SETUP
   startReceiver(
-    onConnectionRequest: (socketID: string, approveCallback: (approved: boolean) => void) => void
+    onConnectionRequest: (
+      newTransfer: INewTransfer,
+      approveCallback: (approved: boolean) => void
+    ) => void
   ) {
     this.server = http.createServer()
     this.ioServer = new Server(this.server)
 
     this.ioServer.on('connection', (socket) => {
-      onConnectionRequest(socket.id, (approved) => {
-        if (!approved) {
-          console.log(`Connection rejected: ${socket.id}`)
-          socket.emit('connection-rejected')
-          socket.disconnect()
+      socket.on('batch-start', ({ batchId, files }: IBatchMetadata) => {
+        const deviceID = [...DeviceListService].find(
+          ([_, v]) => v === socket.conn.remoteAddress.split('::ffff:')[1]
+        )?.[0]
+
+        if (!deviceID) {
+          console.error('Device not found')
           return
         }
 
-        const activeFiles = new Map<string, fs.WriteStream>()
-
-        socket.on('batch-start', ({ batchId, totalSize }: IBatchMetadata) => {
-          this.batchProgress.set(batchId, { sent: 0, total: totalSize })
-        })
-
-        socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
-          const downloadsDir = path.join('downloads')
-          if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
-
-          const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
-          activeFiles.set(fileId, writeStream)
-        })
-
-        socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
-          const writeStream = activeFiles.get(fileId)
-          if (!writeStream) return callback({ status: 'error' })
-
-          try {
-            writeStream.write(chunk)
-            callback({ status: 'received' })
-          } catch (error) {
-            callback({ status: 'error', message: (error as Error).message })
+        onConnectionRequest({ socketID: socket.id, deviceID, files }, (approved) => {
+          if (!approved) {
+            console.log(`Connection rejected: ${socket.id}`)
+            socket.emit('connection-rejected')
+            socket.disconnect()
+            return
           }
-        })
 
-        socket.on('file-end', ({ fileId }) => {
-          activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
-        })
+          const activeFiles = new Map<string, fs.WriteStream>()
 
-        socket.on('disconnect', () => {
-          activeFiles.forEach((stream) => stream.destroy())
+          this.batchProgress.set(batchId, {
+            sent: 0,
+            total: files.reduce((acc, curr) => acc + curr.size, 0)
+          })
+
+          socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
+            const downloadsDir = path.join('downloads')
+            if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
+
+            const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
+            activeFiles.set(fileId, writeStream)
+          })
+
+          socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
+            const writeStream = activeFiles.get(fileId)
+            if (!writeStream) return callback({ status: 'error' })
+
+            try {
+              writeStream.write(chunk)
+              callback({ status: 'received' })
+            } catch (error) {
+              callback({ status: 'error', message: (error as Error).message })
+            }
+          })
+
+          socket.on('file-end', ({ fileId }) => {
+            activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
+          })
+
+          socket.on('disconnect', () => {
+            activeFiles.forEach((stream) => stream.destroy())
+          })
         })
       })
     })
@@ -151,8 +172,12 @@ export class FileTransfer {
     if (!this.socket?.connected) throw new Error('Connection not established')
 
     const batchId = crypto.randomUUID()
-    const totalSize = filePaths.reduce((acc, path) => acc + fs.statSync(path).size, 0)
-    this.socket.emit('batch-start', { batchId, totalFiles: filePaths.length, totalSize })
+    const files = filePaths.map((filePath) => ({
+      name: path.basename(filePath),
+      size: fs.statSync(filePath).size
+    }))
+
+    this.socket.emit('batch-start', { batchId, files } as IBatchMetadata)
 
     const results = []
     for (const filePath of filePaths) {
