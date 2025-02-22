@@ -76,10 +76,11 @@ export class FileTransfer {
         onConnectionRequest({ socketID: socket.id, deviceID, files }, (approved) => {
           if (!approved) {
             console.log(`Connection rejected: ${socket.id}`)
-            socket.emit('connection-rejected')
-            socket.disconnect()
+            socket.emit('transfer-approve', batchId, false)
             return
           }
+
+          socket.emit('transfer-approve', batchId, true)
 
           const activeFiles = new Map<string, fs.WriteStream>()
 
@@ -168,7 +169,7 @@ export class FileTransfer {
     }
   }
 
-  async sendFiles(filePaths: string[], callbacks?: ITransferCallbacks): Promise<string[]> {
+  async sendFiles(filePaths: string[], callbacks?: ITransferCallbacks) {
     if (!this.socket?.connected) throw new Error('Connection not established')
 
     const batchId = crypto.randomUUID()
@@ -179,24 +180,30 @@ export class FileTransfer {
 
     this.socket.emit('batch-start', { batchId, files } as IBatchMetadata)
 
-    const results = []
-    for (const filePath of filePaths) {
-      try {
-        const fileId = await this.sendFile(
-          filePath,
-          {
-            onFileProgress: callbacks?.onFileProgress,
-            onError: callbacks?.onError
-          },
-          batchId
-        )
-        results.push(fileId)
-      } catch (error) {
-        console.error(`Error sending ${path.basename(filePath)}:`, error)
-      }
-    }
+    this.socket.once('transfer-approve', async (sentBatchID, approved) => {
+      if (sentBatchID === batchId) {
+        if (approved) {
+          const results = []
+          for (const filePath of filePaths) {
+            try {
+              const fileId = await this.sendFile(
+                filePath,
+                {
+                  onFileProgress: callbacks?.onFileProgress,
+                  onError: callbacks?.onError
+                },
+                batchId
+              )
+              results.push(fileId)
+            } catch (error) {
+              console.error(`Error sending ${path.basename(filePath)}:`, error)
+            }
+          }
 
-    return results
+          return results
+        } else return
+      }
+    })
   }
 
   // HELPER METHODS

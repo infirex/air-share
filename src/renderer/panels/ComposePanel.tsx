@@ -1,5 +1,5 @@
 import { useDeviceStore } from '@/renderer/store'
-import { IDevice, IFile } from '@/shared/interfaces'
+import { IFile } from '@/shared/interfaces'
 import { Badge, Button, Flex, IconButton, ScrollArea, Separator, Text } from '@radix-ui/themes'
 import { JSX } from 'react'
 import { FileRejection, useDropzone } from 'react-dropzone'
@@ -18,39 +18,8 @@ import {
 } from 'react-icons/fa6'
 import { useList } from 'react-use'
 import { useShallow } from 'zustand/react/shallow'
-
-interface IDeviceComponent extends IDevice {
-  onRemove: (id: string) => void
-  onSelect: (id: string) => void
-  selected?: boolean
-}
-const DeviceComponent: React.FC<IDeviceComponent> = (props) => {
-  return (
-    <Flex
-      className={`device-component ${props.selected ? 'selected' : ''}`}
-      gap={'4'}
-      justify={'between'}
-      px={'4'}
-      py={'1'}
-      align={'center'}
-      onClick={() => props.onSelect(props.id)}
-    >
-      <Flex gap={'5'} align={'center'}>
-        <FaComputer size={24} />
-        <Flex direction={'column'}>
-          <Text weight={'bold'}>{props.name}</Text>
-          <Text weight={'light'} size={'1'}>
-            {props.os}
-          </Text>
-        </Flex>
-      </Flex>
-
-      <IconButton color="gray" variant="ghost" onClick={() => props.onRemove(props.id)}>
-        <FaX size={'12'} />
-      </IconButton>
-    </Flex>
-  )
-}
+import DeviceComponent from '../components/DeviceComponent'
+import { formatBytes } from '../Utils'
 
 const ComposePanel: React.FC = () => {
   const [files, handlers] = useList<IFile>([])
@@ -90,18 +59,6 @@ const ComposePanel: React.FC = () => {
     useFsAccessApi: false,
     maxSize: 10 * 1024 * 1024 * 1024 // 10GB
   })
-
-  const formatBytes = (bytes: number, decimals: number = 2): string => {
-    if (bytes === 0) return '0 B'
-
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    const size = sizes[i]
-
-    const value = parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))
-    return `${value} ${size}`
-  }
 
   const getFileTypeIcon = (fileType: string): JSX.Element => {
     const size = 16

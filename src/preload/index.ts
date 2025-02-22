@@ -11,7 +11,7 @@ export const api = {
   listenIncomingTransfer: (callback: (newTransfer: INewTransfer) => void) =>
     ipcRenderer.on('new-transfer', (_evt, newTransfer) => callback(newTransfer)),
   approveTransfer: (socketID: string, isApproved: boolean) =>
-    ipcRenderer.send('new-transfer', socketID, isApproved),
+    ipcRenderer.send('approve-transfer', socketID, isApproved),
   removeEventListener: (channel: string): any => ipcRenderer.removeAllListeners(channel)
 }
 

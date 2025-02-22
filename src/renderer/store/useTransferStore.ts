@@ -22,17 +22,24 @@ type State = {
 type Action = {
   addNewTransfer: (transfer: ITransfer) => void
   removeTransfer: (transferID: string) => void
+  updateTransferStatus: (transferID: string, newStatus: TransferStatus) => void
 }
 
 export const useTransferStore = create<State & Action>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       transfers: [],
       addNewTransfer: (transfer: ITransfer) =>
-        set((state) => ({ transfers: [...(state.transfers ?? []), transfer] })),
+        set((state) => ({ transfers: [transfer, ...(state.transfers ?? [])] })),
       removeTransfer: (transferID: string) =>
         set((state) => ({
           transfers: state.transfers?.filter((transfer) => transfer.id !== transferID)
+        })),
+      updateTransferStatus: (transferID: string, newStatus: TransferStatus) =>
+        set((state) => ({
+          transfers: (state.transfers ?? []).map((transfer) =>
+            transfer.id === transferID ? { ...transfer, status: newStatus } : transfer
+          )
         }))
     }),
     {
