@@ -12,6 +12,8 @@ export const api = {
     ipcRenderer.on('new-transfer', (_evt, newTransfer) => callback(newTransfer)),
   approveTransfer: (socketID: string, isApproved: boolean) =>
     ipcRenderer.send('approve-transfer', socketID, isApproved),
+  progressInfo: (callback: (transferId: string, progress: number) => void) =>
+    ipcRenderer.on('progress-info', (_evt, transferID, progress) => callback(transferID, progress)),
   removeEventListener: (channel: string): any => ipcRenderer.removeAllListeners(channel)
 }
 

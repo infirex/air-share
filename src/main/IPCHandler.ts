@@ -15,8 +15,11 @@ export const registerIPCMainHandlers = (window: BrowserWindow): void => {
 
       window.webContents.send('new-transfer', newTransfer)
 
-      ipcMain.on('approve-transfer', (_evt, approvedSocketID, isApproved) => {
-        if (newTransfer.socketID === approvedSocketID) approveCallback(isApproved)
+      ipcMain.on('approve-transfer', (_evt, approvedSocketID: string, isApproved: boolean) => {
+        if (newTransfer.socketID === approvedSocketID)
+          approveCallback(isApproved, (progress) => {
+            window.webContents.send('progress-info', approvedSocketID, progress)
+          })
       })
     })
   })

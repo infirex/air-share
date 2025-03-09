@@ -56,7 +56,7 @@ export class FileTransfer {
   startReceiver(
     onConnectionRequest: (
       newTransfer: INewTransfer,
-      approveCallback: (approved: boolean) => void
+      approveCallback: (approved: boolean, progressCb?: (progress: number) => void) => void
     ) => void
   ) {
     this.server = http.createServer()
@@ -73,7 +73,7 @@ export class FileTransfer {
           return
         }
 
-        onConnectionRequest({ socketID: socket.id, deviceID, files }, (approved) => {
+        onConnectionRequest({ socketID: socket.id, deviceID, files }, (approved, progressCb) => {
           if (!approved) {
             console.log(`Connection rejected: ${socket.id}`)
             socket.emit('transfer-approve', batchId, false)
@@ -84,10 +84,8 @@ export class FileTransfer {
 
           const activeFiles = new Map<string, fs.WriteStream>()
 
-          this.batchProgress.set(batchId, {
-            sent: 0,
-            total: files.reduce((acc, curr) => acc + curr.size, 0)
-          })
+          const totalSize = files.reduce((acc, curr) => acc + curr.size, 0)
+          let transferredSize = 0
 
           socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
             const downloadsDir = path.join('downloads')
@@ -103,6 +101,11 @@ export class FileTransfer {
 
             try {
               writeStream.write(chunk)
+              transferredSize += chunk.length
+
+              const progress = (transferredSize / totalSize) * 100
+              if (progressCb) progressCb(progress)
+
               callback({ status: 'received' })
             } catch (error) {
               callback({ status: 'error', message: (error as Error).message })

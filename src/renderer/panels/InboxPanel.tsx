@@ -1,10 +1,11 @@
 import InfoBox from '@/renderer/components/InfoBox'
-import { Button, Flex, ScrollArea, Separator, Text } from '@radix-ui/themes'
+import { Button, Flex, Progress, ScrollArea, Separator, Text } from '@radix-ui/themes'
 import { FaFile, FaList } from 'react-icons/fa6'
 import { useShallow } from 'zustand/react/shallow'
 import DeviceComponent from '../components/DeviceComponent'
 import { TransferStatus, useDeviceStore, useTransferStore } from '../store'
 import { formatBytes } from '../Utils'
+import { useEffect, useState } from 'react'
 
 const InboxPanel: React.FC = () => {
   const { transfers, removeTransfer, updateTransferStatus } = useTransferStore(
@@ -15,19 +16,36 @@ const InboxPanel: React.FC = () => {
     }))
   )
 
+  const [transferProgress, setTransferProgress] = useState<Map<string, number>>(new Map()) // transfer id, progress
+
   const { devices } = useDeviceStore(useShallow((state) => ({ devices: state.devices })))
 
   const getSenderByID = (senderID: string) => devices.find((device) => device.id === senderID)
 
   const handleAcceptTransfer = (transferID: string) => {
-    // TODO: implement accept transfer logic
     updateTransferStatus(transferID, TransferStatus.ACCEPTED)
 
     window.api.approveTransfer(transferID, true)
   }
 
+  useEffect(() => {
+    window.api.progressInfo((transferID, progress) => {
+      setTransferProgress((prev) => {
+        const newMap = new Map(prev)
+
+        if (progress === 100) {
+          newMap.delete(transferID) // delete when progress is 100
+        } else {
+          newMap.set(transferID, progress) // set or update
+        }
+        return newMap
+      })
+    })
+
+    return () => window.api.removeEventListener('progress-info')
+  }, [])
+
   const handleRejectTransfer = (transferID: string) => {
-    // TODO: implement reject transfer logic
     updateTransferStatus(transferID, TransferStatus.REJECTED)
     window.api.approveTransfer(transferID, false)
   }
@@ -68,6 +86,9 @@ const InboxPanel: React.FC = () => {
                 </Flex>
               </ScrollArea>
             </Flex>
+            {transferProgress.has(transfer.id) && (
+              <Progress size={'1'} value={transferProgress.get(transfer.id)} color="green" />
+            )}
             <Flex gapX={'1'} align={'center'}>
               {transfer.status == TransferStatus.PENDING ? (
                 <>
