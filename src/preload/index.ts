@@ -10,11 +10,12 @@ export const api = {
     await ipcRenderer.invoke('get-current-device-info'),
   listenIncomingTransfer: (callback: (newTransfer: INewTransfer) => void) =>
     ipcRenderer.on('new-transfer', (_evt, newTransfer) => callback(newTransfer)),
-  approveTransfer: (socketID: string, isApproved: boolean) =>
-    ipcRenderer.send('approve-transfer', socketID, isApproved),
+  approveTransfer: (socketID: string, isApproved: boolean, folderPath?: string) =>
+    ipcRenderer.send('approve-transfer', socketID, isApproved,folderPath),
   progressInfo: (callback: (transferId: string, progress: number) => void) =>
     ipcRenderer.on('progress-info', (_evt, transferID, progress) => callback(transferID, progress)),
-  removeEventListener: (channel: string): any => ipcRenderer.removeAllListeners(channel)
+  removeEventListener: (channel: string): any => ipcRenderer.removeAllListeners(channel),
+  selectDirectory: (): Promise<string | undefined> => ipcRenderer.invoke('select-directory')
 }
 
 // --------- Expose some API to the Renderer process ---------

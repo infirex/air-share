@@ -20,6 +20,7 @@ import { Socket, io } from 'socket.io-client'
 import { Transform } from 'stream'
 import { pipeline } from 'stream/promises'
 import DeviceListService from './DeviceList.service'
+import { app } from 'electron'
 
 export class FileTransfer {
   private socket: Socket | null = null
@@ -56,7 +57,11 @@ export class FileTransfer {
   startReceiver(
     onConnectionRequest: (
       newTransfer: INewTransfer,
-      approveCallback: (approved: boolean, progressCb?: (progress: number) => void) => void
+      approveCallback: (
+        approved: boolean,
+        folderPath?: string,
+        progressCb?: (progress: number) => void
+      ) => void
     ) => void
   ) {
     this.server = http.createServer()
@@ -73,53 +78,56 @@ export class FileTransfer {
           return
         }
 
-        onConnectionRequest({ socketID: socket.id, deviceID, files }, (approved, progressCb) => {
-          if (!approved) {
-            console.log(`Connection rejected: ${socket.id}`)
-            socket.emit('transfer-approve', batchId, false)
-            return
-          }
-
-          socket.emit('transfer-approve', batchId, true)
-
-          const activeFiles = new Map<string, fs.WriteStream>()
-
-          const totalSize = files.reduce((acc, curr) => acc + curr.size, 0)
-          let transferredSize = 0
-
-          socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
-            const downloadsDir = path.join('downloads')
-            if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
-
-            const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
-            activeFiles.set(fileId, writeStream)
-          })
-
-          socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
-            const writeStream = activeFiles.get(fileId)
-            if (!writeStream) return callback({ status: 'error' })
-
-            try {
-              writeStream.write(chunk)
-              transferredSize += chunk.length
-
-              const progress = (transferredSize / totalSize) * 100
-              if (progressCb) progressCb(progress)
-
-              callback({ status: 'received' })
-            } catch (error) {
-              callback({ status: 'error', message: (error as Error).message })
+        onConnectionRequest(
+          { socketID: socket.id, deviceID, files },
+          (approved, folderPath, progressCb) => {
+            if (!approved) {
+              console.log(`Connection rejected: ${socket.id}`)
+              socket.emit('transfer-approve', batchId, false)
+              return
             }
-          })
 
-          socket.on('file-end', ({ fileId }) => {
-            activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
-          })
+            socket.emit('transfer-approve', batchId, true)
 
-          socket.on('disconnect', () => {
-            activeFiles.forEach((stream) => stream.destroy())
-          })
-        })
+            const activeFiles = new Map<string, fs.WriteStream>()
+
+            const totalSize = files.reduce((acc, curr) => acc + curr.size, 0)
+            let transferredSize = 0
+
+            socket.on('file-metadata', ({ fileId, fileName }: IFileMetadata) => {
+              const downloadsDir = path.join(folderPath ?? app.getPath('downloads'))
+              if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir)
+
+              const writeStream = fs.createWriteStream(path.join(downloadsDir, fileName))
+              activeFiles.set(fileId, writeStream)
+            })
+
+            socket.on('file-chunk', async ({ fileId, chunk }, callback) => {
+              const writeStream = activeFiles.get(fileId)
+              if (!writeStream) return callback({ status: 'error' })
+
+              try {
+                writeStream.write(chunk)
+                transferredSize += chunk.length
+
+                const progress = (transferredSize / totalSize) * 100
+                if (progressCb) progressCb(progress)
+
+                callback({ status: 'received' })
+              } catch (error) {
+                callback({ status: 'error', message: (error as Error).message })
+              }
+            })
+
+            socket.on('file-end', ({ fileId }) => {
+              activeFiles.get(fileId)?.end(() => activeFiles.delete(fileId))
+            })
+
+            socket.on('disconnect', () => {
+              activeFiles.forEach((stream) => stream.destroy())
+            })
+          }
+        )
       })
     })
 

@@ -51,6 +51,7 @@ const Panel: React.FC = () => {
         files: newTransfer.files,
         id: newTransfer.socketID,
         senderID: newTransfer.deviceID,
+        targetPath: 'Downloads',
         status: TransferStatus.PENDING
       })
 

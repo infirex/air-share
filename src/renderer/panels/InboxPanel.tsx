@@ -1,18 +1,27 @@
 import InfoBox from '@/renderer/components/InfoBox'
-import { Button, Flex, Progress, ScrollArea, Separator, Text } from '@radix-ui/themes'
+import {
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Progress,
+  ScrollArea,
+  Separator,
+  Text
+} from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 import { FaFile, FaList } from 'react-icons/fa6'
 import { useShallow } from 'zustand/react/shallow'
 import DeviceComponent from '../components/DeviceComponent'
 import { TransferStatus, useDeviceStore, useTransferStore } from '../store'
 import { formatBytes } from '../Utils'
-import { useEffect, useState } from 'react'
 
 const InboxPanel: React.FC = () => {
-  const { transfers, removeTransfer, updateTransferStatus } = useTransferStore(
+  const { transfers, removeTransfer, updateTransfer } = useTransferStore(
     useShallow((state) => ({
       transfers: state.transfers,
       removeTransfer: state.removeTransfer,
-      updateTransferStatus: state.updateTransferStatus
+      updateTransfer: state.updateTransfer
     }))
   )
 
@@ -22,10 +31,11 @@ const InboxPanel: React.FC = () => {
 
   const getSenderByID = (senderID: string) => devices.find((device) => device.id === senderID)
 
-  const handleAcceptTransfer = (transferID: string) => {
-    updateTransferStatus(transferID, TransferStatus.ACCEPTED)
+  const handleAcceptTransfer = async (transferID: string) => {
+    updateTransfer(transferID, { status: TransferStatus.ACCEPTED })
 
-    window.api.approveTransfer(transferID, true)
+    const folderPath = transfers?.find((transfer) => transfer.id === transferID)?.targetPath
+    window.api.approveTransfer(transferID, true, folderPath)
   }
 
   useEffect(() => {
@@ -34,6 +44,7 @@ const InboxPanel: React.FC = () => {
         const newMap = new Map(prev)
 
         if (progress === 100) {
+          updateTransfer(transferID, { status: TransferStatus.SUCCESSFUL })
           newMap.delete(transferID) // delete when progress is 100
         } else {
           newMap.set(transferID, progress) // set or update
@@ -46,7 +57,7 @@ const InboxPanel: React.FC = () => {
   }, [])
 
   const handleRejectTransfer = (transferID: string) => {
-    updateTransferStatus(transferID, TransferStatus.REJECTED)
+    updateTransfer(transferID, { status: TransferStatus.REJECTED })
     window.api.approveTransfer(transferID, false)
   }
 
@@ -86,11 +97,51 @@ const InboxPanel: React.FC = () => {
                 </Flex>
               </ScrollArea>
             </Flex>
-            {transferProgress.has(transfer.id) && (
-              <Progress size={'1'} value={transferProgress.get(transfer.id)} color="green" />
-            )}
+            <Card>
+              <Flex direction={'column'} gap={'3'}>
+                <Flex justify={'between'} align={'center'} gap={'5'}>
+                  <Flex align={'center'} gap={'4'}>
+                    <Button
+                      onClick={async () =>
+                        updateTransfer(transfer.id, {
+                          targetPath: await window.api.selectDirectory() ?? transfer.targetPath
+                        })
+                      }
+                      disabled={transfer.status !== TransferStatus.PENDING}
+                      color="amber"
+                      size={'2'}
+                    >
+                      {transfer.targetPath?.split('\\').filter(Boolean).pop()}
+                    </Button>
+                    <Text weight={'bold'} size={'1'}>
+                      {formatBytes(transfer.files.reduce((acc, curr) => acc + curr.size, 0))}
+                    </Text>
+                  </Flex>
+
+                  {transfer.status === TransferStatus.PENDING && (
+                    <Badge color="amber">PENDING</Badge>
+                  )}
+                  {transfer.status === TransferStatus.ACCEPTED && (
+                    <Badge color="cyan">TRANSFERRING</Badge>
+                  )}
+                  {transfer.status === TransferStatus.SUCCESSFUL && (
+                    <Badge color="green">SUCCESSFUL</Badge>
+                  )}
+                  {transfer.status === TransferStatus.REJECTED && (
+                    <Badge color="red">REJECTED</Badge>
+                  )}
+                  {transfer.status === TransferStatus.CANCELED && (
+                    <Badge color="red">CANCELED</Badge>
+                  )}
+                </Flex>
+
+                {transferProgress.has(transfer.id) && (
+                  <Progress size={'1'} value={transferProgress.get(transfer.id)} color="green" />
+                )}
+              </Flex>
+            </Card>
             <Flex gapX={'1'} align={'center'}>
-              {transfer.status == TransferStatus.PENDING ? (
+              {transfer.status == TransferStatus.PENDING && (
                 <>
                   <Button
                     onClick={() => handleAcceptTransfer(transfer.id)}
@@ -111,17 +162,6 @@ const InboxPanel: React.FC = () => {
                     Reject
                   </Button>
                 </>
-              ) : (
-                <Button
-                  style={{ width: '100%' }}
-                  color={transfer.status === TransferStatus.ACCEPTED ? 'green' : 'red'}
-                  size={'4'}
-                  variant="outline"
-                  disabled
-                >
-                  {transfer.status === TransferStatus.ACCEPTED && 'ACCEPTED'}
-                  {transfer.status === TransferStatus.REJECTED && 'REJECTED'}
-                </Button>
               )}
             </Flex>
           </Flex>

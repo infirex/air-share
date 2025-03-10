@@ -4,7 +4,9 @@ import { persist } from 'zustand/middleware'
 export enum TransferStatus {
   PENDING,
   ACCEPTED,
-  REJECTED
+  REJECTED,
+  SUCCESSFUL,
+  CANCELED
 }
 
 interface ITransfer {
@@ -13,6 +15,7 @@ interface ITransfer {
   files: { name: string; size: number }[]
   date: string
   status?: TransferStatus
+  targetPath: string
 }
 
 type State = {
@@ -22,7 +25,7 @@ type State = {
 type Action = {
   addNewTransfer: (transfer: ITransfer) => void
   removeTransfer: (transferID: string) => void
-  updateTransferStatus: (transferID: string, newStatus: TransferStatus) => void
+  updateTransfer: (transferID: string, prop: Partial<ITransfer>) => void
 }
 
 export const useTransferStore = create<State & Action>()(
@@ -35,10 +38,10 @@ export const useTransferStore = create<State & Action>()(
         set((state) => ({
           transfers: state.transfers?.filter((transfer) => transfer.id !== transferID)
         })),
-      updateTransferStatus: (transferID: string, newStatus: TransferStatus) =>
+      updateTransfer: (transferID: string, prop: Partial<ITransfer>) =>
         set((state) => ({
           transfers: (state.transfers ?? []).map((transfer) =>
-            transfer.id === transferID ? { ...transfer, status: newStatus } : transfer
+            transfer.id === transferID ? { ...transfer, ...prop } : transfer
           )
         }))
     }),
